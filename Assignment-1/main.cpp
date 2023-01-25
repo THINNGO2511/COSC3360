@@ -13,12 +13,8 @@ int main(int argc, char** argv){
     pq.enqueue('B', 1);
     pq.enqueue('C', 3);
     pq.enqueue('D', 2);
-    // pq.enqueue('\0', 6);
-
-    // pq.print();
 
     pq.process();
-    // pq.printTree();
 
     return 0;
 }

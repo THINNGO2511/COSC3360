@@ -138,7 +138,6 @@ public:
             newNode->left = firstNode;
             newNode->right = secondNode;
 
-            // enqueue(newNode->data, newNode->prio);// need to make a new func call enqueueNode
             enqueueNode(newNode);
         }
 
