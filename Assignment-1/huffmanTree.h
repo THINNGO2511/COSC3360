@@ -36,8 +36,37 @@ public:
         PNode<T> *temp = new PNode<T>();
         temp->data = _data;
         temp->prio = _prio;
+
         temp->next = nullptr;
 
+        if (isEmpty()) {
+            front = temp;
+            rear = temp;
+        }
+
+        else {
+            PNode<T> *cu = front;
+            PNode<T> *prev = nullptr;
+            if (temp->prio < cu->prio || (temp->prio == cu->prio  && temp->data < cu->data)) {
+                temp->next = front;
+                front = temp;
+            }
+            else {
+                while (cu != nullptr && temp->prio >= cu->prio ) {
+                    prev = cu;
+                    cu = cu->next;
+                }
+                prev->next = temp;
+                temp->next = cu;
+                if (temp->next == nullptr)
+                    rear = temp;
+            }
+        }
+    }
+    
+    //this function allows enqueueing with a node instead of only data and priority
+    void enqueueNode(PNode<T> *temp){
+        temp->next = nullptr;
 
         if (isEmpty()) {
             front = temp;
@@ -64,11 +93,11 @@ public:
         }
     }
 
-    void dequeue(){
+    PNode<T>* dequeue(){
         if (!isEmpty()) {
             PNode<T> *temp = front;
             front = front->next;
-            delete temp;
+            return temp;
         }
     }
 
@@ -96,15 +125,38 @@ public:
         return count;
     }
 
-    PNode<T>* CombineNode(PNode<T> *nodeLeft, PNode<T> *nodeRight){
-        PNode<T> *newNode = new PNode<T>();
-        newNode->prio = nodeLeft->prio + nodeRight->prio;
-        newNode->data = '\0';
-        newNode->left = nodeLeft;
-        newNode->right = nodeRight;
+    void process(){
+        while(size() > 1){
+            PNode<char> *firstNode = getFront();
+            dequeue();
+            PNode<char> *secondNode = getFront();
+            dequeue();
 
-        return newNode;
-    };
+            PNode<T> *newNode = new PNode<T>();
+            newNode->prio = firstNode->prio + secondNode->prio;
+            newNode->data = '\0';
+            newNode->left = firstNode;
+            newNode->right = secondNode;
+
+            // enqueue(newNode->data, newNode->prio);// need to make a new func call enqueueNode
+            enqueueNode(newNode);
+        }
+
+        printTree(getFront(), " ");
+    }
+
+    void printTree(PNode<T> *root, string str ){
+        if(!root){
+            return;
+        }
+
+        if(root->data!='\0'){
+            cout<<root->data<<": "<<str<<endl;
+        }
+
+        printTree(root->left,str+"0");
+        printTree(root->right,str+"1");
+    }
 };
 
 #endif
