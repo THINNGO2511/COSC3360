@@ -21,10 +21,10 @@ void printTree(PNode<char> *root, string str ){
 void process(prio_queue<char>& pq){
     while(pq.size() > 1){
         PNode<char> *firstNode = pq.getFront();
-        cout<<pq.getFront()->data<<pq.getFront()->prio<<endl;
+        // cout<<pq.getFront()->data<<pq.getFront()->prio<<endl;
         pq.dequeue();
         PNode<char> *secondNode = pq.getFront();
-        cout<<pq.getFront()->data<<pq.getFront()->prio<<endl;
+        // cout<<pq.getFront()->data<<pq.getFront()->prio<<endl;
         pq.dequeue();
 
         // cout<<pq.getFront()->data<<pq.getFront()->prio<<endl;
@@ -32,7 +32,7 @@ void process(prio_queue<char>& pq){
         pq.enqueue(result->data, result->prio);
     }
 
-    // printTree(pq.getFront(), " ");
+    printTree(pq.getFront(), " ");
 }
 
 int main(int argc, char** argv){
