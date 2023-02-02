@@ -53,6 +53,7 @@ public:
             }
             else {
                 while (cu != nullptr && temp->prio >= cu->prio ) {
+                    //add if statement for that same prio and data difference
                     prev = cu;
                     cu = cu->next;
                 }
@@ -81,14 +82,20 @@ public:
                 front = temp;
             }
             else {
-                while (cu != nullptr && temp->prio >= cu->prio ) {
-                    prev = cu;
-                    cu = cu->next;
-                }
-                prev->next = temp;
-                temp->next = cu;
-                if (temp->next == nullptr)
-                    rear = temp;
+                //if data1 == data2 and prio1==prio2 then the new one will be at front of that next node
+                // if(temp->prio == cu->prio && temp->data == cu->data){
+
+                // }
+                // else{
+                    while (cu != nullptr && temp->prio > cu->prio ) {// took out = of temp>prio
+                        //worst case: if statement that same prio and data =='\0', then new one will be at front of next node
+                        prev = cu;
+                        cu = cu->next;
+                    }
+                    prev->next = temp;
+                    temp->next = cu;
+                    if (temp->next == nullptr) {rear = temp;}
+                // }
             }
         }
     }
@@ -151,7 +158,7 @@ public:
         }
 
         if(root->data!='\0'){
-            cout<<root->data<<": "<<str<<endl;
+            cout<<"Symbol: "<<root->data<<", Frequency: "<<root->prio<<", Code: "<<str<<endl;
         }
 
         printTree(root->left,str+"0");
