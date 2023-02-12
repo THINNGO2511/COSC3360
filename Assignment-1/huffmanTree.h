@@ -2,6 +2,7 @@
 #define HUFFMANTREE_H
 
 #include <iostream>
+#include <sstream>
 #include <cstdlib>
 #include "math.h"
 using namespace std;
@@ -11,6 +12,7 @@ template <class T>
 struct PNode {
     T data;
     int prio;
+
     PNode<T> *next;
     PNode<T> *left;
     PNode<T> *right;
@@ -22,10 +24,13 @@ class prio_queue {
 public:
     PNode<T> *front;
     PNode<T> *rear;
+    string storageStr, storageData;
 
     prio_queue(){
         front = nullptr;
         rear = nullptr;
+        storageStr = "";
+        storageData = "";
     }
 
     bool isEmpty(){
@@ -47,20 +52,49 @@ public:
         else {
             PNode<T> *cu = front;
             PNode<T> *prev = nullptr;
-            if (temp->prio < cu->prio || (temp->prio == cu->prio  && temp->data < cu->data)) {
+
+            if(temp->prio < cu->prio) {// if temp->prio is less than cu->prio, then add to front
                 temp->next = front;
                 front = temp;
             }
-            else {
-                while (cu != nullptr && temp->prio >= cu->prio ) {
-                    //add if statement for that same prio and data difference
+            else if(temp->prio == cu->prio){// if temp->prio is equal than cu->prio
+                if(temp->data < cu->data){// if temp->data is less than cu->data, then add to front
+                    temp->next = front;
+                    front = temp;
+                }
+                else if(temp->data > cu->data){//if temp->data is more than cu->data, then traverse then add when it's appropriate
+                    while(cu != nullptr && temp->data > cu->data && temp->prio == cu->prio){
+                        prev = cu;
+                        cu = cu->next;
+                    }
+                    prev->next = temp;
+                    temp->next = cu;
+                    if(temp->next == nullptr){ rear = temp; }
+                }
+            }
+            else if(temp->prio > cu->prio){
+                while(cu != nullptr && temp->prio > cu->prio){
                     prev = cu;
                     cu = cu->next;
                 }
-                prev->next = temp;
-                temp->next = cu;
-                if (temp->next == nullptr)
-                    rear = temp;
+
+                if(cu == nullptr){
+                    prev->next = temp;
+                    temp->next = cu;
+                }
+                else if(temp->data < cu->data){// if temp->data is less than cu->data, then add
+                    prev->next = temp;
+                    temp->next = cu;
+                }
+                else if(temp->data > cu->data){//if temp->data is more than cu->data, then traverse then add when it's appropriate
+                    while(cu != nullptr && temp->data > cu->data && temp->prio == cu->prio){
+                        prev = cu;
+                        cu = cu->next;
+                    }
+                    prev->next = temp;
+                    temp->next = cu;
+                    if(temp->next == nullptr){ rear = temp; }
+                }
             }
         }
     }
@@ -82,20 +116,13 @@ public:
                 front = temp;
             }
             else {
-                //if data1 == data2 and prio1==prio2 then the new one will be at front of that next node
-                // if(temp->prio == cu->prio && temp->data == cu->data){
-
-                // }
-                // else{
                     while (cu != nullptr && temp->prio > cu->prio ) {// took out = of temp>prio
-                        //worst case: if statement that same prio and data =='\0', then new one will be at front of next node
                         prev = cu;
                         cu = cu->next;
                     }
                     prev->next = temp;
                     temp->next = cu;
                     if (temp->next == nullptr) {rear = temp;}
-                // }
             }
         }
     }
@@ -145,24 +172,39 @@ public:
             newNode->left = firstNode;
             newNode->right = secondNode;
 
-            // enqueue(newNode->data, newNode->prio);// need to make a new func call enqueueNode
             enqueueNode(newNode);
         }
 
         printTree(getFront(), " ");
     }
 
-    void printTree(PNode<T> *root, string str ){
+    void printTree(PNode<T> *root, string str){
         if(!root){
             return;
         }
 
         if(root->data!='\0'){
             cout<<"Symbol: "<<root->data<<", Frequency: "<<root->prio<<", Code: "<<str<<endl;
+            storageStr+=str;
+            storageData+=root->data;
         }
 
         printTree(root->left,str+"0");
         printTree(root->right,str+"1");
+    }
+
+    void transferData(vector<string> &vect1, vector<char> &vect2){
+        string s1, s2;
+        stringstream ss1(storageStr);
+        stringstream ss2(storageData);
+
+        while(getline(ss1, s1, ' ')){
+            vect1.push_back(s1);
+        }
+
+        for(int i = 0; i < storageData.length(); i++){
+            vect2.push_back(storageData[i]);
+        }
     }
 };
 
