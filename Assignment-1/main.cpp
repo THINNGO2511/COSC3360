@@ -7,6 +7,7 @@
 #include "huffmanTree.h"
 using namespace std;
 
+//getting position from string
 vector<string> getPos(string input){
     vector<string> result;
     string s;
@@ -16,6 +17,7 @@ vector<string> getPos(string input){
     }
     return result; 
 }
+//struct for threading
 template <class T>
 struct thread_struct {
     PNode<T> *root;
@@ -23,6 +25,7 @@ struct thread_struct {
     vector<pair<int, char> > list;// char with their position in the string
 };
 
+//threading function
 template <class T>
 void *decode(void *thread_arg){
     thread_struct<T> *thread_point = (thread_struct<T> *) thread_arg;
@@ -37,26 +40,13 @@ void *decode(void *thread_arg){
     return (NULL);
 }
 
-// template <class T>
-// char getChar(PNode<T> *node, string path, int index) {
-//     cout<<path<<endl;
-//     if(index == path.length() - 1)
-//         cout<<node->prio<<endl;
-//         return node->data;
-
-//     if(path[index] == '0')
-//         return getChar(node->left, path, index + 1);
-//     else if(path[index] == '1')
-//         return getChar(node->right, path, index + 1);
-// }
-
+//getting character from path (say 111 is going right 3 times from root)
 template <class T>
 char getChar(PNode<T> *node, string path, int index) {
     if (path.empty()) {
         return '\0';
     }
     if (index == path.length()) {
-        // cout<<path<<" "<<"data:"<<node->data<<" "<<node->prio<<endl;
         return node->data;
     }
     if (path[index] == '0') {
@@ -73,27 +63,27 @@ int main(int argc, char** argv){
     string inputString, inputCommand;
     int repetition, arr_size=0, num_threads=0;
 
+    //getting input from files
     cin>>fileName;
     cin>>commandName;
 
     ifstream inFileName(fileName);
     ifstream inCommandName(commandName);
 
+    //getting input from input file and push into huffmanTree
     prio_queue<char> pq;
     while(getline(inFileName, inputString)){
         pq.enqueue(inputString[0], stoi(inputString.substr(2, inputString.size() - 1)));
         arr_size += stoi(inputString.substr(2, inputString.size() - 1));// getting original message size
     }
 
-    vector<string> vect1;
-    vector<char> vect2;
-    vector<pair<string, char> >vect_combined;
-
+    //processing tree and print it out
     pq.process();
 
     vector<pthread_t> threads;
     vector<thread_struct<char>*> threadsList;
 
+    //getting input from command file with multiple threads, every input will have a dedicated thread
     while(getline(inCommandName, inputCommand)){
         num_threads+=1;
         thread_struct<char> *thread_data = new thread_struct<char>();
@@ -106,12 +96,14 @@ int main(int argc, char** argv){
         threadsList.push_back(thread_data);
     }
 
+    //joining threads
     for (int i = 0; i < threads.size(); i++) {
         pthread_join(threads[i], NULL);
     }
 
     char arr[arr_size];// array of characters to print the original message
 
+    //assigning char for original message
     for (int i = 0; i < threadsList.size(); i++) {
         for (int j = 0; j < threadsList[i]->list.size(); j++) {
             int pos = threadsList[i]->list[j].first;
@@ -119,11 +111,12 @@ int main(int argc, char** argv){
             arr[threadsList[i]->list[j].first] = threadsList[i]->list[j].second;
         }
     }
+
+    //printing out the original message
     cout<<"Original message: ";
     for (int i = 0; i < arr_size; i++) {
         cout << arr[i];
     }
-
     return 0;
 }
 

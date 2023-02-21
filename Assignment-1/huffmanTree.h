@@ -26,6 +26,7 @@ public:
     PNode<T> *rear;
     string storageStr, storageData;
 
+    //initializing huffmanTree
     prio_queue(){
         front = nullptr;
         rear = nullptr;
@@ -33,10 +34,12 @@ public:
         storageData = "";
     }
 
+    //check if tree is empty
     bool isEmpty(){
         return front == nullptr;
     }
-
+    
+    //enqueue information to the tree by creating a new node with provided data
     void enqueue(T _data, int _prio) {
         PNode<T> *temp = new PNode<T>();
         temp->data = _data;
@@ -44,12 +47,12 @@ public:
 
         temp->next = nullptr;
 
-        if (isEmpty()) {
+        if (isEmpty()) {// if tree is empty, then this will be the root of the tree
             front = temp;
             rear = temp;
         }
 
-        else {
+        else {//otherwise...
             PNode<T> *cu = front;
             PNode<T> *prev = nullptr;
 
@@ -62,7 +65,7 @@ public:
                     temp->next = front;
                     front = temp;
                 }
-                else if(temp->data > cu->data){//if temp->data is more than cu->data, then traverse then add when it's appropriate
+                else if(temp->data > cu->data){//if priority is the same and temp->data is more than cu->data, then traverse then add when it's appropriate
                     while(cu != nullptr && temp->data > cu->data && temp->prio == cu->prio){
                         prev = cu;
                         cu = cu->next;
@@ -72,13 +75,12 @@ public:
                     if(temp->next == nullptr){ rear = temp; }
                 }
             }
-            else if(temp->prio > cu->prio){
+            else if(temp->prio > cu->prio){//if temp->prio is greater than cu->prio, then traverse until it's at least equal to cu->prio.
                 while(cu != nullptr && temp->prio > cu->prio){
                     prev = cu;
                     cu = cu->next;
                 }
-
-                if(cu == nullptr){
+                if(cu == nullptr){//if it's the end of tree, then add.
                     prev->next = temp;
                     temp->next = cu;
                 }
@@ -86,7 +88,7 @@ public:
                     prev->next = temp;
                     temp->next = cu;
                 }
-                else if(temp->data > cu->data){//if temp->data is more than cu->data, then traverse then add when it's appropriate
+                else if(temp->data > cu->data){//if temp->data is more than cu->data, then continue to traverse then add when it's appropriate
                     while(cu != nullptr && temp->data > cu->data && temp->prio == cu->prio){
                         prev = cu;
                         cu = cu->next;
@@ -100,6 +102,7 @@ public:
     }
     
     //this function allows enqueueing with a node instead of only data and priority
+    //it's only used for combining two nodes together
     void enqueueNode(PNode<T> *temp){
         temp->next = nullptr;
 
@@ -125,8 +128,9 @@ public:
                     if (temp->next == nullptr) {rear = temp;}
             }
         }
-    }
+    } 
 
+    //removing node
     PNode<T>* dequeue(){
         if (!isEmpty()) {
             PNode<T> *temp = front;
@@ -135,12 +139,14 @@ public:
         }
     }
 
+    //returning the root of the tree
     PNode<T>* getFront() {
         if (!isEmpty())
             return front;
         return nullptr;
     }
 
+    //printing out the queue
     void print() {
         PNode<T> *cu = front;
         while (cu != nullptr) {
@@ -149,6 +155,7 @@ public:
         }
     }
 
+    //getting priority queue size
     int size(){
         PNode<T> *temp = front;
         int count =0;
@@ -159,6 +166,8 @@ public:
         return count;
     }
 
+    // this function pops out first two nodes from the queue and combine them together, then enqueue them again
+    //then print them out
     void process(){
         while(size() > 1){
             PNode<char> *firstNode = getFront();
@@ -176,8 +185,9 @@ public:
         }
 
         printTree(getFront(), " ");
-    }
+    } 
 
+    //printing out the entire tree
     void printTree(PNode<T> *root, string str){
         if(!root){
             return;
@@ -191,20 +201,6 @@ public:
 
         printTree(root->left,str+"0");
         printTree(root->right,str+"1");
-    }
-
-    void transferData(vector<string> &vect1, vector<char> &vect2){
-        string s1, s2;
-        stringstream ss1(storageStr);
-        stringstream ss2(storageData);
-
-        while(getline(ss1, s1, ' ')){
-            vect1.push_back(s1);
-        }
-
-        for(int i = 0; i < storageData.length(); i++){
-            vect2.push_back(storageData[i]);
-        }
     }
 };
 
