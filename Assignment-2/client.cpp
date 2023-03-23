@@ -1,12 +1,6 @@
-// #include <iostream>
-// #include <fstream>
-// #include <string>
-// #include <vector>
-// #include "huffmanTree.h"
-// using namespace std;
-
 #include <sstream>
 #include <pthread.h>
+#include <thread>
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -32,30 +26,25 @@ vector<string> getPos(string input){
     return result; 
 }
 
-//struct for threading
-template <class T>
-struct thread_struct {
-    char *hostname;
-    int portNo;
-
-    string line;
-    vector<pair<int, char> > list;// char with their position in the string
+struct thread_struct{
+    string line; // this string will take command line inputs and serves as input for getPos()
+    vector< pair< int, char > > list; // this vector has < position, char > pairs to store characters and their positions
+    char *hostname; // hostname of the server
+    int portNo; // port of the server
 };
 
-//threading function
-template <class T>
-void *decode(void *thread_arg){
-    cout<<"hi"<<endl;
-    thread_struct<T> *thread_point = (thread_struct<T> *) thread_arg;
+void *decode(void * thread_arg){
+    thread_struct * thread_point = (thread_struct *)thread_arg;
 
-    vector<string> posNum = getPos(thread_point->line);//posNum[0] char 11, posNum[1][2][3] 1 3 5
+    vector< string> posNum = getPos(thread_point->line);//posNum[0] code: 11, posNum[1][2][3] = 1 3 5
+    char dataChar;// 1 thread has 1 character with multiple positions
 
+    //open socket for sending binary code and receiving char from server
     int sockfd, n;
+    char buffer[256];
 
     struct sockaddr_in serv_addr;
     struct hostent *server;
-
-    char buffer[256];
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
@@ -79,9 +68,10 @@ void *decode(void *thread_arg){
         exit(0);
     }
 
-    bzero(buffer, sizeof(buffer));
-    // strcpy(buffer, posNum[0].c_str());
-    n = write(sockfd, posNum[0], strlen(posNum[0]));
+    bzero(buffer, sizeof(buffer));//writing to server
+    string what = posNum[0];
+    strcpy(buffer, what.c_str());
+    n = write(sockfd, buffer, sizeof(buffer));
 
     if(n < 0) {
         cout<<"ERROR writing to socket"<<endl;
@@ -95,65 +85,47 @@ void *decode(void *thread_arg){
         exit(0);
     }
 
-    char dataChar = buffer[0];
+    dataChar = buffer[0];
 
     for(int i = 1; i < posNum.size(); i++){
         int n = stoi(posNum[i]);
         thread_point->list.push_back(make_pair(n, dataChar));
     }
 
-    close(sockfd);
-    
-    return (NULL);
+    close(sockfd);//close the socket
+    return(NULL);
 }
 
 int main(int argc, char** argv){
-
     if(argc < 3){
-        cout<<"No port provided"<<endl;
-        exit(69);
+        cout<<"ERROR, no port provided"<<endl;
+        exit(1);
     }
 
     char* hostname = argv[1];
     int portNo = atoi(argv[2]);
-    char buffer[256];
 
-    string inputCommand;
-    int arr_size, num_threads=0;
+    string inputCommand, symbolCode;
+    int num_threads=0;
+    vector<string> posNum;
+    vector< vector <string> > posList;
 
     vector<pthread_t> threads;
-    vector<thread_struct<char>*> threadsList;
-    string symbolCode;
-    vector< vector < int > > posvec;
-    vector <string> symbolCodes;
+    vector<thread_struct *> threadsList;
 
     //getting input from command file with multiple threads, every input will have a dedicated thread
-    cout<<"hi"<<endl;
     while(getline(cin, inputCommand)){
         num_threads+=1;
 
-        //arr_size
-        istringstream my_stream(inputCommand);
-        int position;
-        vector<int> positions;
-
-        my_stream >> symbolCode; //get the symbol binary code
-        while (my_stream >> position) //get the positions for that specific symbol in the message
-        {
-            arr_size++;    //message size purposes
-            //cout <<"position:" << position << endl;
-            positions.push_back(position);
-        }
-        posvec.push_back(positions);
-        symbolCodes.push_back(symbolCode);
-
-        thread_struct<char> *thread_data = new thread_struct<char>();
+        //creating threads
+        thread_struct * thread_data = new thread_struct();
         thread_data->line = inputCommand;
-        thread_data->hostname = hostname;
         thread_data->portNo = portNo;
-        
+        // cout<<portNo<<endl;
+        thread_data->hostname = hostname;
+
         pthread_t thread;
-        pthread_create(&thread, NULL, &decode<char>, (void*)thread_data);
+        pthread_create(&thread, NULL, &decode, (void*)thread_data);
         threads.push_back(thread);
         threadsList.push_back(thread_data);
     }
@@ -163,22 +135,22 @@ int main(int argc, char** argv){
         pthread_join(threads[i], NULL);
     }
 
-    char arr[arr_size];// array of characters to print the original message
-
-    //assigning char for original message
+    //pushing back the characters into pair vector so sorting is easier and more flexible
+    vector< pair<int, char> > arr;
     for (int i = 0; i < threadsList.size(); i++) {
         for (int j = 0; j < threadsList[i]->list.size(); j++) {
-            int pos = threadsList[i]->list[j].first;
-            char data = threadsList[i]->list[j].second;
-            arr[threadsList[i]->list[j].first] = threadsList[i]->list[j].second;
+            arr.push_back(make_pair(threadsList[i]->list[j].first,threadsList[i]->list[j].second));
         }
     }
 
+    sort(arr.begin(), arr.end());
+
     //printing out the original message
     cout<<"Original message: ";
-    for (int i = 0; i < arr_size; i++) {
-        cout << arr[i];
+    for (int i = 0; i < arr.size(); i++) {
+        cout << arr[i].second;
     }
+
     return 0;
 }
 

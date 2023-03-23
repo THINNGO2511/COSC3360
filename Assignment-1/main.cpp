@@ -32,7 +32,6 @@ void *decode(void *thread_arg){
 
     vector<string> posNum = getPos(thread_point->line);
     char dataChar = getChar(thread_point->root, posNum[0], 0);
-
     for(int i = 1; i < posNum.size(); i++){
         int n = stoi(posNum[i]);
         thread_point->list.push_back(make_pair(n, dataChar));
@@ -101,22 +100,39 @@ int main(int argc, char** argv){
         pthread_join(threads[i], NULL);
     }
 
-    char arr[arr_size];// array of characters to print the original message
+    // char arr[arr_size];// array of characters to print the original message
 
-    //assigning char for original message
+    // //assigning char for original message
+    // for (int i = 0; i < threadsList.size(); i++) {
+    //     for (int j = 0; j < threadsList[i]->list.size(); j++) {
+    //         int pos = threadsList[i]->list[j].first;
+    //         char data = threadsList[i]->list[j].second;
+    //         arr[threadsList[i]->list[j].first] = threadsList[i]->list[j].second;
+    //     }
+    // }
+
+    // //printing out the original message
+    // cout<<"Original message: ";
+    // for (int i = 0; i < arr_size; i++) {
+    //     cout << arr[i];
+    // }
+
+    //pushing back the characters into pair vector so sorting is easier and more flexible
+    vector< pair<int, char> > arr;
     for (int i = 0; i < threadsList.size(); i++) {
         for (int j = 0; j < threadsList[i]->list.size(); j++) {
-            int pos = threadsList[i]->list[j].first;
-            char data = threadsList[i]->list[j].second;
-            arr[threadsList[i]->list[j].first] = threadsList[i]->list[j].second;
+            arr.push_back(make_pair(threadsList[i]->list[j].first,threadsList[i]->list[j].second));
         }
     }
+
+    sort(arr.begin(), arr.end());
 
     //printing out the original message
     cout<<"Original message: ";
     for (int i = 0; i < arr_size; i++) {
-        cout << arr[i];
+        cout << arr[i].second;
     }
+
     return 0;
 }
 

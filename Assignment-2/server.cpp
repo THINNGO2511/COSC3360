@@ -1,21 +1,3 @@
-// #include <iostream>
-// #include <thread>
-// #include <sstream>
-// #include <string>
-
-// #include "huffmanTree.h"
-// #include <vector>
-// #include <sys/wait.h> 
-
-// #include <unistd.h>
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
-// #include <sys/types.h>
-// #include <sys/socket.h>
-// #include <netinet/in.h>
-// #include <iostream>
-
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -60,7 +42,7 @@ char getChar(PNode<T> *node, string path, int index) {
 int main(int argc, char** argv){
     if(argc < 2){
         cout<<"Error no port provided"<<endl;
-        exit(69);
+        exit(1);
     }
 
     struct sockaddr_in serv_addr, cli_addr;

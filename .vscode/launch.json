@@ -1,0 +1,72 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Build and Run C++ (Multiple cpp files)",
+        "type": "shell",
+        "command": "g++ -std=c++17 -g \"${fileDirname}\"/*.cpp -lpthread -o \"${fileDirname}/${fileBasenameNoExtension}\"  && \"${fileDirname}/${fileBasenameNoExtension}\"",
+        "group": "build",
+        "problemMatcher": "$gcc",
+        "options": {
+          "cwd": "${fileDirname}"
+        }
+      },
+      {
+        "label": "Build and Run C++",
+        "type": "shell",
+        "command": "g++ -std=c++17 -g \"${fileDirname}/${fileBasename}\" -o \"${fileDirname}/${fileBasenameNoExtension}\" -lpthread  && \"${fileDirname}/${fileBasenameNoExtension}\"",
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "problemMatcher": "$gcc",
+        "options": {
+          "cwd": "${fileDirname}"
+        }
+      },
+      {
+        "label": "Build C++",
+        "type": "shell",
+        "command": "g++ -std=c++17 -g \"${fileDirname}/${fileBasename}\" -o \"${fileDirname}/${fileBasenameNoExtension}\" -lpthread",
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "problemMatcher": "$gcc",
+        "options": {
+          "cwd": "${fileDirname}"
+        }
+      },
+      {
+        "label": "Build C++ (Multiple cpp files)",
+        "type": "shell",
+        "command": "g++ -std=c++17 -g \"${fileDirname}\"/*.cpp -o \"${fileDirname}/${fileBasenameNoExtension}\" -lpthread",
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "problemMatcher": "$gcc",
+        "options": {
+          "cwd": "${fileDirname}"
+        }
+      },
+      {
+        "type": "cppbuild",
+        "label": "C/C++: g++.exe build active file",
+        "command": "C:\\msys64\\mingw64\\bin\\g++.exe",
+        "args": [
+          "-g",
+          "${file}",
+          "-o",
+          "${fileDirname}\\${fileBasenameNoExtension}.exe"
+        ],
+        "options": {
+          "cwd": "${fileDirname}"
+        },
+        "problemMatcher": ["$gcc"],
+        "group": "build",
+        "detail": "compiler: C:\\msys64\\mingw64\\bin\\g++.exe"
+      }
+    ]
+  }
+  
