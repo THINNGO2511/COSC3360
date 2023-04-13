@@ -33,7 +33,7 @@ struct thread_struct{
     int portNo; // port of the server
 };
 
-void *decode(void * thread_arg){
+void *decode(void * thread_arg){//threading function 
     thread_struct * thread_point = (thread_struct *)thread_arg;
 
     vector< string> posNum = getPos(thread_point->line);//posNum[0] code: 11, posNum[1][2][3] = 1 3 5
@@ -78,7 +78,7 @@ void *decode(void * thread_arg){
         exit(0);
     }
 
-    n = read(sockfd,buffer, strlen(buffer));
+    n = read(sockfd,buffer, strlen(buffer));// reading from server
 
     if(n < 0){
         cout<<"ERROR reading from socket"<<endl;
@@ -121,7 +121,6 @@ int main(int argc, char** argv){
         thread_struct * thread_data = new thread_struct();
         thread_data->line = inputCommand;
         thread_data->portNo = portNo;
-        // cout<<portNo<<endl;
         thread_data->hostname = hostname;
 
         pthread_t thread;
