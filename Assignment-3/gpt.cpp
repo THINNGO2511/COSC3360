@@ -21,11 +21,30 @@ template <class T>
 struct thread_struct {
     PNode<T> *root;
     string line;
-    int turn = 0;
+    int turn;
     pthread_mutex_t *bsem;
     pthread_cond_t *waitTurn;
     vector<pair<int, char> > list;// char with their position in the string
 };
+
+//threading function
+template <class T>
+void *decode(void *thread_arg) {
+    thread_struct<T> *thread_point = (thread_struct<T> *)thread_arg;
+
+    vector<string> posNum = getPos(thread_point->line);
+    char dataChar = getChar(thread_point->root, posNum[0], 0);
+    int Freq = getFreq(thread_point->root, posNum[0], 0);
+
+    cout << "Symbol: " << dataChar << ", Frequency: " << Freq << ", Code: " << posNum[0] << endl;
+    pthread_mutex_unlock(thread_point->bsem);
+
+    for (int i = 1; i < posNum.size(); i++) {
+        int n = stoi(posNum[i]);
+        thread_point->list.push_back(make_pair(n, dataChar));
+    }
+    return (NULL);
+}
 
 // Function prototypes
 vector<string> getPos(string input);
@@ -36,39 +55,13 @@ char getChar(PNode<T> *node, string path, int index);
 template <class T>
 int getFreq(PNode<T> *node, string path, int index);
 
-template <class T>
-void *decode(void *thread_arg) {
-    thread_struct<T> *thread_point = (thread_struct<T> *)thread_arg;
-
-    vector<string> posNum = getPos(thread_point->line);
-    char dataChar = getChar(thread_point->root, posNum[0], 0);
-    int Freq = getFreq(thread_point->root, posNum[0], 0);
-
-    int turn = thread_point->turn;
-    while (turn != thread_point->turn) {
-        pthread_cond_wait(thread_point->waitTurn, thread_point->bsem);
-    }
-    
-    cout << "Symbol: " << dataChar << ", Frequency: " << Freq << ", Code: " << posNum[0] << endl;
-    thread_point->turn += 1;
-    pthread_cond_broadcast(thread_point->waitTurn);
-    pthread_mutex_unlock(thread_point->bsem);
-
-    for (int i = 1; i < posNum.size(); i++) {
-        int n = stoi(posNum[i]);
-        thread_point->list.push_back(make_pair(n, dataChar));
-    }
-    return (NULL);
-}
-
-
 int main(int argc, char** argv){
     string fileName, commandName;
     string inputString, inputCommand;
-    int arr_size=0, num_threads=0;
+    int repetition, arr_size=0, num_threads=0;
 
     //getting first size number input from files
-    string size_num="";
+    string size_num;
     cin >> size_num;
     cin.ignore();
 
@@ -96,12 +89,14 @@ int main(int argc, char** argv){
     // Initialize bsem mutex
     pthread_mutex_t bsem;
     pthread_mutex_init(&bsem, NULL);
-    pthread_cond_t waitTurn = PTHREAD_COND_INITIALIZER;
 
     // Create and initialize thread_struct
+    // thread_struct<char> *thread_data = new thread_struct<char>();
+    // thread_data->root = pq.getFront();
+
     thread_struct<char> *thread_data = new thread_struct<char>();
+    thread_data->root = pq.getFront();
     thread_data->bsem = &bsem;
-    thread_data->waitTurn = &waitTurn;
 
     // Create and initialize threads vector
     vector<pthread_t> threads;
@@ -116,14 +111,12 @@ int main(int argc, char** argv){
     while(getline(cin, inputCommand)){
         num_threads+=1;
 
+        thread_data->line = inputCommand;
+        thread_data->turn = turn;
+
         pthread_t thread;
 
         pthread_mutex_lock(&bsem);
-
-        thread_data->line = inputCommand;
-        thread_data->turn = turn;
-        thread_data->root = pq.getFront();
-        turn++;
         
         pthread_create(&thread, NULL, &decode<char>, (void*)thread_data);
         threads.push_back(thread);
@@ -132,7 +125,6 @@ int main(int argc, char** argv){
             break;
         }
         n++;
-        // turn++;// note this
     }
 
     //joining threads
