@@ -22,7 +22,9 @@ struct thread_struct {
     PNode<T> *root;
     string line;
     int turn = 0;
-    pthread_mutex_t *bsem;
+    int turn_thread;
+    pthread_mutex_t *bsem1;
+    pthread_mutex_t *bsem2;
     pthread_cond_t *waitTurn;
     vector<pair<int, char> > list;// char with their position in the string
 };
@@ -43,21 +45,27 @@ void *decode(void *thread_arg) {
     vector<string> posNum = getPos(thread_point->line);
     char dataChar = getChar(thread_point->root, posNum[0], 0);
     int Freq = getFreq(thread_point->root, posNum[0], 0);
+    int turn = thread_point->turn_thread;
 
-    int turn = thread_point->turn;
-    while (turn != thread_point->turn) {
-        pthread_cond_wait(thread_point->waitTurn, thread_point->bsem);
+    pthread_mutex_unlock(thread_point->bsem1);
+    pthread_mutex_lock(thread_point->bsem2);
+
+    while (thread_point->turn != turn) {
+        pthread_cond_wait(thread_point->waitTurn, thread_point->bsem2);
     }
+    pthread_mutex_unlock(thread_point->bsem2);
     
-    cout << "Symbol: " << dataChar << ", Frequency: " << Freq << ", Code: " << posNum[0] << endl;
-    thread_point->turn += 1;
-    pthread_cond_broadcast(thread_point->waitTurn);
-    pthread_mutex_unlock(thread_point->bsem);
-
     for (int i = 1; i < posNum.size(); i++) {
         int n = stoi(posNum[i]);
         thread_point->list.push_back(make_pair(n, dataChar));
     }
+    cout << "Symbol: " << dataChar << ", Frequency: " << Freq << ", Code: " << posNum[0] << endl;
+
+    pthread_mutex_lock(thread_point->bsem2);
+    thread_point->turn += 1;
+    pthread_cond_broadcast(thread_point->waitTurn);
+    pthread_mutex_unlock(thread_point->bsem2);
+
     return (NULL);
 }
 
@@ -94,14 +102,14 @@ int main(int argc, char** argv){
     pq.process();
 
     // Initialize bsem mutex
-    pthread_mutex_t bsem;
-    pthread_mutex_init(&bsem, NULL);
+    pthread_mutex_t bsem1;
+    pthread_mutex_t bsem2;
+    pthread_mutex_init(&bsem1, NULL);
+    pthread_mutex_init(&bsem2, NULL);
     pthread_cond_t waitTurn = PTHREAD_COND_INITIALIZER;
 
     // Create and initialize thread_struct
     thread_struct<char> *thread_data = new thread_struct<char>();
-    thread_data->bsem = &bsem;
-    thread_data->waitTurn = &waitTurn;
 
     // Create and initialize threads vector
     vector<pthread_t> threads;
@@ -118,12 +126,16 @@ int main(int argc, char** argv){
 
         pthread_t thread;
 
-        pthread_mutex_lock(&bsem);
+        pthread_mutex_lock(&bsem1);//lock bsem1
 
         thread_data->line = inputCommand;
-        thread_data->turn = turn;
+        // thread_data->turn = turn;
+        thread_data->turn_thread = turn;
         thread_data->root = pq.getFront();
-        turn++;
+        thread_data->bsem1 = &bsem1;
+        thread_data->bsem2 = &bsem2;
+        thread_data->waitTurn = &waitTurn;
+        turn++;//maybe turn is after creating thread
         
         pthread_create(&thread, NULL, &decode<char>, (void*)thread_data);
         threads.push_back(thread);
@@ -132,7 +144,6 @@ int main(int argc, char** argv){
             break;
         }
         n++;
-        // turn++;// note this
     }
 
     //joining threads
